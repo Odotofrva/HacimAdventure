@@ -1110,7 +1110,7 @@ button {
   }
 
   .rt-device-logo {
-    width: 20px;
+    width: 58px;
   }
 
   .gameboy-controls {
@@ -1820,86 +1820,138 @@ function buildLevel(stage) {
   const map = Array.from({ length: height }, (_, y) => Array.from({ length: width }, (_, x) =>
     x === 0 || y === 0 || x === width - 1 || y === height - 1 ? TILE.WALL : TILE.WALL
   ));
+
+  // Main rule for the updated levels:
+  // Every required item is placed on a guaranteed route from start to exit.
+  // Enemies and optional rewards can live in side rooms, but they never block the route needed to complete a stage.
   const { path, used: pathSet } = makePath(width, height, stage);
   path.forEach(p => { if (inBounds(map, p.x, p.y)) map[p.y][p.x] = TILE.FLOOR; });
   carveSideRooms(map, pathSet, stage);
 
   const start = { x: 1, y: 1 };
   const exit = { x: width - 2, y: height - 2 };
+  pathSet.add(coordKey(start));
+  pathSet.add(coordKey(exit));
   map[start.y][start.x] = TILE.FLOOR;
   map[exit.y][exit.x] = TILE.EXIT;
 
   const pathCells = path.filter(p => inBounds(map, p.x, p.y));
   const at = pct => pathCells[Math.min(pathCells.length - 2, Math.max(1, Math.floor(pathCells.length * pct)))];
-  const hasCodePuzzle = stage >= 25;
+  const placeRouteItem = (pct, tile) => {
+    const preferred = at(pct);
+    const startIndex = Math.max(1, Math.floor(pathCells.length * pct));
+    for (let offset = 0; offset < pathCells.length; offset++) {
+      const right = pathCells[Math.min(pathCells.length - 2, startIndex + offset)];
+      const left = pathCells[Math.max(1, startIndex - offset)];
+      for (const p of [preferred, right, left]) {
+        if (!p || !inBounds(map, p.x, p.y)) continue;
+        if (map[p.y][p.x] === TILE.FLOOR) { map[p.y][p.x] = tile; return p; }
+      }
+    }
+    return preferred;
+  };
 
-  const redKey = at(0.18);
-  const redDoor = at(hasCodePuzzle ? 0.44 : 0.54);
-  map[redKey.y][redKey.x] = TILE.RED_KEY;
-  map[redDoor.y][redDoor.x] = TILE.RED_DOOR;
+  const hasCodePuzzle = stage >= 25;
+  placeRouteItem(0.18, TILE.RED_KEY);
+  placeRouteItem(hasCodePuzzle ? 0.42 : 0.58, TILE.RED_DOOR);
 
   if (hasCodePuzzle) {
-    const usb = at(0.52);
-    const computer = at(0.63);
-    const codeDoor = at(0.74);
-    map[usb.y][usb.x] = TILE.USB;
-    map[computer.y][computer.x] = TILE.COMPUTER;
-    map[codeDoor.y][codeDoor.x] = TILE.CODE_DOOR;
+    placeRouteItem(0.50, TILE.USB);
+    placeRouteItem(0.60, TILE.COMPUTER);
+    placeRouteItem(0.72, TILE.CODE_DOOR);
   }
 
-  const requiredCrystals = Math.min(5 + Math.floor(stage / 2), 48);
+  let requiredCrystals = Math.min(5 + Math.floor(stage / 2), 48);
+  let placedRequiredCrystals = 0;
   const crystalSlots = [];
-  const startIndex = Math.floor(pathCells.length * 0.08);
+  const startIndex = Math.floor(pathCells.length * 0.07);
   const endIndex = Math.floor(pathCells.length * 0.90);
   for (let i = startIndex; i <= endIndex; i++) {
     const p = pathCells[i];
     if (!p) continue;
     if (map[p.y][p.x] === TILE.FLOOR && !(p.x === start.x && p.y === start.y)) crystalSlots.push(p);
   }
-  for (let i = 0; i < requiredCrystals && crystalSlots.length; i++) {
-    const idx = Math.floor(i * crystalSlots.length / requiredCrystals);
+  requiredCrystals = Math.min(requiredCrystals, crystalSlots.length);
+  const usedCrystalSlots = new Set();
+  for (let i = 0; i < requiredCrystals; i++) {
+    const idx = Math.min(crystalSlots.length - 1, Math.floor((i + 0.5) * crystalSlots.length / requiredCrystals));
     const p = crystalSlots[idx];
-    if (map[p.y][p.x] === TILE.FLOOR) map[p.y][p.x] = TILE.CRYSTAL;
+    if (p && map[p.y][p.x] === TILE.FLOOR && !usedCrystalSlots.has(coordKey(p))) {
+      map[p.y][p.x] = TILE.CRYSTAL;
+      usedCrystalSlots.add(coordKey(p));
+      placedRequiredCrystals++;
+    }
+  }
+  // Repair any skipped crystal slots caused by item overlap.
+  if (placedRequiredCrystals < requiredCrystals) {
+    for (const p of crystalSlots) {
+      if (placedRequiredCrystals >= requiredCrystals) break;
+      if (map[p.y][p.x] === TILE.FLOOR) {
+        map[p.y][p.x] = TILE.CRYSTAL;
+        placedRequiredCrystals++;
+      }
+    }
   }
 
-  // Optional side room rewards. They are never required to complete the stage.
+  // Optional side room rewards are never required for the exit count.
   for (let y = 1; y < height - 1; y++) {
     for (let x = 1; x < width - 1; x++) {
       if (map[y][x] !== TILE.FLOOR || pathSet.has(`${x},${y}`)) continue;
       const v = (x * 17 + y * 13 + stage * 11) % 100;
-      if (stage >= 30 && v < 3) map[y][x] = TILE.BATTERY;
-      else if (stage >= 34 && v >= 3 && v < 6) map[y][x] = TILE.BLUEPRINT;
-      else if (stage >= 8 && v >= 6 && v < 11) map[y][x] = TILE.CRYSTAL;
-      else if (stage >= 12 && v >= 11 && v < 14) map[y][x] = TILE.WATER;
-      else if (stage >= 16 && v >= 14 && v < 17) map[y][x] = TILE.ICE;
+      if (stage >= 30 && v < 5) map[y][x] = TILE.BATTERY;
+      else if (stage >= 34 && v >= 5 && v < 10) map[y][x] = TILE.BLUEPRINT;
+      else if (stage >= 12 && v >= 10 && v < 14) map[y][x] = TILE.WATER;
+      else if (stage >= 16 && v >= 14 && v < 18) map[y][x] = TILE.ICE;
     }
   }
 
-  // Hazards sit near the main route, not on it. This keeps the game difficult but not impossible.
-  for (let i = 0; i < Math.min(2 + Math.floor(stage / 5), 10); i++) {
-    const anchor = pathCells[Math.floor((0.22 + i * 0.07) * pathCells.length) % pathCells.length];
-    if (!anchor) continue;
-    const options = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1]].map(([dx,dy]) => ({x:anchor.x+dx,y:anchor.y+dy}));
-    const spot = options.find(p => inBounds(map,p.x,p.y) && map[p.y][p.x] === TILE.FLOOR && !pathSet.has(`${p.x},${p.y}`));
+  // Decorative hazards stay in side rooms only. They do not sit on the required route.
+  for (let i = 0; i < Math.min(2 + Math.floor(stage / 7), 10); i++) {
+    const sideFloors = [];
+    for (let y = 1; y < height - 1; y++) {
+      for (let x = 1; x < width - 1; x++) {
+        if (map[y][x] === TILE.FLOOR && !pathSet.has(`${x},${y}`)) sideFloors.push({x,y});
+      }
+    }
+    const spot = sideFloors[(i * 7 + stage * 3) % Math.max(1, sideFloors.length)];
     if (spot) map[spot.y][spot.x] = stage >= 14 && i % 2 ? TILE.ICE : TILE.TRAP;
   }
 
   if (stage % 20 === 0 || stage === TOTAL_LEVELS) {
-    const disk = at(0.82);
-    if (map[disk.y][disk.x] === TILE.FLOOR || map[disk.y][disk.x] === TILE.CRYSTAL) map[disk.y][disk.x] = TILE.DISK;
+    const disk = placeRouteItem(0.82, TILE.DISK);
+    if (disk && map[disk.y][disk.x] === TILE.CRYSTAL) placedRequiredCrystals = Math.max(0, placedRequiredCrystals - 1);
   }
 
+  // Bots are placed only in side rooms and are prevented from walking onto the required path.
   const bots = [];
   const botCount = Math.min(Math.floor(stage / 5) + 1, 12);
-  for (let i = 0; i < botCount; i++) {
-    const anchor = pathCells[Math.floor((0.28 + i * 0.10) * pathCells.length) % pathCells.length];
-    if (!anchor) continue;
-    const candidates = [{x:anchor.x+1,y:anchor.y},{x:anchor.x-1,y:anchor.y},{x:anchor.x,y:anchor.y+1},{x:anchor.x,y:anchor.y-1},anchor];
-    const p = candidates.find(c => inBounds(map,c.x,c.y) && map[c.y][c.x] === TILE.FLOOR) || anchor;
-    if (map[p.y][p.x] === TILE.FLOOR && !(p.x === start.x && p.y === start.y)) bots.push({ x:p.x, y:p.y, dir: i % 2 === 0 ? -1 : 1, axis: i % 3 === 0 ? 'y' : 'x' });
+  const botSpots = [];
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      if (map[y][x] === TILE.FLOOR && !pathSet.has(`${x},${y}`)) botSpots.push({x,y});
+    }
+  }
+  for (let i = 0; i < botCount && botSpots.length; i++) {
+    const p = botSpots[(stage * 11 + i * 9) % botSpots.length];
+    if (!bots.some(b => b.x === p.x && b.y === p.y)) {
+      bots.push({ x:p.x, y:p.y, dir: i % 2 === 0 ? -1 : 1, axis: i % 3 === 0 ? 'y' : 'x' });
+    }
   }
 
-  const level = { stage, name: THEMES[(stage - 1) % THEMES.length].name, theme: THEMES[(stage - 1) % THEMES.length], width, height, requiredCrystals: countTiles(map, TILE.CRYSTAL), start, map, bots, hasCodePuzzle };
+  const level = {
+    stage,
+    name: THEMES[(stage - 1) % THEMES.length].name,
+    theme: THEMES[(stage - 1) % THEMES.length],
+    width,
+    height,
+    requiredCrystals: placedRequiredCrystals,
+    start,
+    map,
+    bots,
+    hasCodePuzzle,
+    safePathSet: new Set(pathSet)
+  };
+
   const report = validateLevel(level);
   if (!report.ok) console.warn(`Stage ${stage} failed validation`, report.errors);
   return level;
@@ -1909,7 +1961,7 @@ function validateLevel(level) {
   const errors = [];
   const map = level.map;
   const need = (condition, text) => { if (!condition) errors.push(text); };
-  need(countTiles(map, TILE.CRYSTAL) >= 1, 'missing crystals');
+  need(countTiles(map, TILE.CRYSTAL) >= level.requiredCrystals && level.requiredCrystals >= 1, 'missing required crystals');
   need(countTiles(map, TILE.RED_KEY) === 1, 'missing red key');
   need(countTiles(map, TILE.RED_DOOR) === 1, 'missing red door');
   need(countTiles(map, TILE.EXIT) === 1, 'missing exit');
@@ -2141,7 +2193,7 @@ function movePlayer(dx, dy) {
   if (shouldPauseForMath) { updateUI(); draw(); return; }
   updateBots(); maybeTriggerBotBubble(); checkCollision(); updateUI(); draw();
 }
-function updateBots() { bots.forEach(bot => { const dx = bot.axis === 'x' ? bot.dir : 0, dy = bot.axis === 'y' ? bot.dir : 0, nx = bot.x + dx, ny = bot.y + dy, next = level[ny]?.[nx]; if (next === undefined || [TILE.WALL, TILE.RED_DOOR, TILE.CODE_DOOR, TILE.EXIT, TILE.WATER, TILE.TRAP].includes(next)) bot.dir *= -1; else { bot.x = nx; bot.y = ny; } }); }
+function updateBots() { bots.forEach(bot => { const dx = bot.axis === 'x' ? bot.dir : 0, dy = bot.axis === 'y' ? bot.dir : 0, nx = bot.x + dx, ny = bot.y + dy, next = level[ny]?.[nx]; const wouldStepOnRequiredPath = levelData.safePathSet && levelData.safePathSet.has(`${nx},${ny}`); if (next === undefined || wouldStepOnRequiredPath || [TILE.WALL, TILE.RED_DOOR, TILE.CODE_DOOR, TILE.EXIT, TILE.WATER, TILE.TRAP, TILE.CRYSTAL, TILE.RED_KEY, TILE.USB, TILE.COMPUTER, TILE.DISK].includes(next)) bot.dir *= -1; else { bot.x = nx; bot.y = ny; } }); }
 function checkCollision() { if (bots.some(bot => bot.x === player.x && bot.y === player.y)) loseGame('A corrupted bot caught Hacim. Restart this stage.'); }
 function loseGame(text) { gameState = 'lost'; botBubble = null; playLoseSound(); setMessage(text); updateUI(); draw(); }
 function completeStage() { gameState = 'won'; updateUI(); draw(); if (currentLevelIndex === levels.length - 1) { showVictoryScreen(); return; } setMessage(`Stage ${levelData.stage} complete. Loading next stage...`); setTimeout(() => { loadLevel(currentLevelIndex + 1); startGame(); }, 900); }
