@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hacim Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="scanlines"></div>
+  <main class="game-shell">
+    <section class="brand-panel">
+      <p class="eyebrow">Hacim Alyn Presents</p>
+      <h1>Hacim Adventure</h1>
+      <p class="tagline">Recover Pa-Pa's Golden Disk across 40 digital ruins.</p>
+      <div class="stage-card">
+        <span id="stageNumber">Stage 01</span>
+        <strong id="stageName">The First Gate</strong>
+        <small id="stageSize">10 x 7 Grid</small>
+      </div>
+      <div class="stat-grid">
+        <div><span id="crystalCount">0</span><small>Crystals</small></div>
+        <div><span id="keyStatus">No</span><small>Key</small></div>
+        <div><span id="moveCount">0</span><small>Moves</small></div>
+      </div>
+      <div class="mission-box">
+        <strong>Mission:</strong>
+        <p id="missionText">Collect crystals, grab the key, open the gate, and reach the exit. Each stage gets larger and trickier. Higher stages add USB, computer terminals, code doors, and bonus items.</p>
+      </div>
+    </section>
+
+    <section class="game-panel">
+      <canvas id="gameCanvas" width="768" height="576" aria-label="Hacim Adventure game canvas"></canvas>
+      <div id="message" class="message">Press Start to begin.</div>
+      <div class="controls">
+        <button id="startBtn">Start Game</button>
+        <button id="restartBtn">Restart Stage</button>
+        <button id="aboutBtn" type="button">About</button>
+      </div>
+      <div class="mobile-controls" aria-label="mobile controls">
+        <button data-dir="up">▲</button>
+        <div>
+          <button data-dir="left">◀</button>
+          <button data-dir="down">▼</button>
+          <button data-dir="right">▶</button>
+        </div>
+      </div>
+      <p class="hint">Keyboard: Arrow Keys or WASD • Mobile: tap or hold the directional pad</p>
+      <div id="victoryOverlay" class="victory-overlay" aria-live="polite">
+        <div>YOU FOUND THE PA-PA FLOPPY DISK</div>
+        <small>Redirecting to odotNYC.xyz</small>
+      </div>
+    </section>
+  </main>
+
+
+  <div id="aboutModal" class="about-modal" aria-hidden="true">
+    <div class="about-card" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+      <button id="aboutClose" class="about-close" type="button" aria-label="Close about popup">×</button>
+      <p class="eyebrow">About The Game</p>
+      <h2 id="aboutTitle">Hacim Adventure</h2>
+      <div class="about-copy">
+        <p><strong>Hacim Adventure</strong> was inspired by one of the very first computer games ever played by the founder of OdotNYC and Hacim Alyn. As a kid discovering computers and digital worlds for the first time, the game that stood out the most was the classic puzzle adventure <strong>Chip’s Challenge</strong>. The creativity, problem solving, keys, doors, hidden paths, and maze like gameplay left a lasting impact that would later inspire a new generation of ideas.</p>
+        <p>Years later, that inspiration evolved into <strong>Hacim Adventure</strong>, a modern retro style browser game built with its own identity, themes, and story world. The project blends puzzle solving, exploration, technology, and retro gaming culture into one experience designed to feel nostalgic while introducing something fresh for a new audience.</p>
+        <p>The name <strong>Hacim</strong> carries an even deeper meaning. It is the founder’s son’s first name, <strong>Micah</strong>, spelled backwards. The game represents legacy, creativity, family, imagination, and the passing of inspiration from one generation to the next through technology and gaming culture.</p>
+        <p>Built under the Hacim Alyn creative universe and powered by RoboTechi Co., <strong>Hacim Adventure</strong> is both a tribute to classic computer gaming and a step toward building original interactive worlds for the future.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    Copyright 2026 Hacim Alyn | All Rights Reserved. Powered by: RoboTechi Co.
+  </footer>
+
+  <script src="game.js"></script>
+</body>
+</html>
