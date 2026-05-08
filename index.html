@@ -1477,6 +1477,58 @@ button {
   .screen-wrap .boot-card img { width: min(112px, 30vw); }
 }
 
+
+/* Single about photo update */
+.about-photo-grid {
+  display: block;
+  margin: 4px 0 22px;
+}
+
+.about-photo-card {
+  min-height: unset;
+  border: 2px solid rgba(49, 215, 255, 0.55);
+  border-radius: 22px;
+  overflow: hidden;
+  padding: 0;
+  background: rgba(8, 12, 31, 0.76);
+  box-shadow: 0 0 28px rgba(49,215,255,0.12), inset 0 0 24px rgba(49,215,255,0.08);
+}
+
+.about-family-photo {
+  display: block;
+  width: 100%;
+  max-height: 430px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.about-photo-caption {
+  padding: 14px 16px;
+  background: rgba(6, 8, 18, 0.72);
+  border-top: 1px solid rgba(255,255,255,0.12);
+}
+
+.about-photo-caption strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--gold);
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.72rem;
+  line-height: 1.6;
+}
+
+.about-photo-caption span {
+  color: rgba(245,247,255,0.76);
+  line-height: 1.6;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 640px) {
+  .about-family-photo {
+    max-height: 310px;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -1559,19 +1611,14 @@ button {
       <button id="aboutClose" class="about-close" type="button" aria-label="Close about popup">×</button>
       <p class="eyebrow">About The Game</p>
       <h2 id="aboutTitle">Hacim Adventure</h2>
-      <div class="about-photo-grid" aria-label="Family photo placeholders">
-        <div class="about-photo-card">
-          <div>
-            <strong>Micah Hacim</strong>
-            <span>Photo placeholder for Micah, the inspiration behind the name Hacim.</span>
-          </div>
-        </div>
-        <div class="about-photo-card">
-          <div>
-            <strong>Pa Pa</strong>
-            <span>Photo placeholder for Pa Pa, connected to the golden floppy disk story.</span>
-          </div>
-        </div>
+      <div class="about-photo-grid" aria-label="Micah and Pa Pa family photo">
+        <figure class="about-photo-card">
+          <img class="about-family-photo" src="micahandpapa.jpeg" alt="Micah sitting with Pa Pa" />
+          <figcaption class="about-photo-caption">
+            <strong>Micah Hacim &amp; Pa Pa</strong>
+            <span>A real family moment connected to the heart and legacy behind Hacim Adventure.</span>
+          </figcaption>
+        </figure>
       </div>
       <div class="about-copy">
         <p><strong>Hacim Adventure</strong> was inspired by one of the very first computer games ever played by the founder of OdotNYC and Hacim Alyn. As a kid discovering computers and digital worlds for the first time, the game that stood out the most was the classic puzzle adventure <strong>Chip’s Challenge</strong>. The creativity, problem solving, keys, doors, hidden paths, and maze like gameplay left a lasting impact that would later inspire a new generation of ideas.</p>
