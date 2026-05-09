@@ -1351,48 +1351,61 @@ button {
 @keyframes bootPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.72; } }
 @keyframes bootLoad { to { width: 100%; } }
 
-/* Math challenge popup */
+/* Math challenge popup: appears inside the Hacim Boy screen, not over the full page */
 .math-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
+  position: absolute;
+  inset: 18px 18px 36px 18px;
+  z-index: 70;
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 18px;
-  background: rgba(0,0,0,0.74);
-  backdrop-filter: blur(6px);
+  padding: 14px;
+  background:
+    repeating-linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.05) 2px, transparent 2px, transparent 6px),
+    rgba(13, 18, 8, 0.88);
+  border-radius: 10px 10px 24px 24px;
+  backdrop-filter: blur(2px);
 }
 .math-modal.show { display: flex; }
 .math-card {
-  width: min(620px, 94vw);
-  border: 4px solid #2e3140;
-  border-radius: 22px;
-  padding: 24px;
+  width: min(560px, 96%);
+  max-height: 92%;
+  overflow: auto;
+  border: 4px solid #17200f;
+  border-radius: 16px;
+  padding: clamp(14px, 3vw, 22px);
   background: linear-gradient(145deg, #aec874, #8fa957);
   color: #17200f;
-  box-shadow: inset 0 0 0 5px rgba(255,255,255,0.15), 0 24px 70px rgba(0,0,0,0.55);
+  box-shadow: inset 0 0 0 5px rgba(255,255,255,0.15), 0 16px 35px rgba(0,0,0,0.45);
   font-family: "Press Start 2P", monospace;
   text-align: center;
 }
-.math-card h2 { margin: 0 0 16px; font-size: clamp(0.9rem, 3vw, 1.35rem); line-height: 1.5; }
-.math-card p { margin: 0 0 18px; font-family: Orbitron, sans-serif; font-weight: 900; }
-.math-question { font-size: clamp(1.15rem, 5vw, 2rem); margin: 12px 0 18px; }
-.math-options { display: grid; gap: 10px; }
+.math-card h2 { margin: 0 0 12px; font-size: clamp(0.64rem, 2.5vw, 1rem); line-height: 1.5; }
+.math-card p { margin: 0 0 12px; font-family: Orbitron, sans-serif; font-size: clamp(0.72rem, 2.2vw, 0.95rem); font-weight: 900; }
+.math-question { font-size: clamp(0.95rem, 4vw, 1.55rem); margin: 10px 0 14px; }
+.math-options { display: grid; gap: 8px; }
 .math-option {
   border: 3px solid rgba(23,32,15,0.55);
-  border-radius: 12px;
-  padding: 14px 12px;
+  border-radius: 10px;
+  padding: 10px 12px;
   background: rgba(255,255,255,0.22);
   text-align: left;
   line-height: 1.5;
+  font-size: clamp(0.62rem, 2vw, 0.78rem);
 }
 .math-option.selected {
   background: #17200f;
   color: #d8f8a8;
   box-shadow: 0 0 0 3px rgba(216,248,168,0.5);
 }
-.math-help { margin-top: 14px; font-size: 0.6rem; line-height: 1.6; color: rgba(23,32,15,0.72); }
+.math-help { margin-top: 12px; font-size: clamp(0.48rem, 1.6vw, 0.58rem); line-height: 1.6; color: rgba(23,32,15,0.72); }
+.math-ok-btn { display: none; }
+@media (max-width: 720px) {
+  .math-modal { inset: 10px 10px 22px 10px; padding: 10px; }
+  .math-card { padding: 12px; border-width: 3px; }
+  .math-options { gap: 6px; }
+  .math-option { padding: 8px 10px; }
+}
 
 
 /* Boot screen now lives inside the Game Boy display instead of covering the full page */
@@ -1477,58 +1490,6 @@ button {
   .screen-wrap .boot-card img { width: min(112px, 30vw); }
 }
 
-
-/* Single about photo update */
-.about-photo-grid {
-  display: block;
-  margin: 4px 0 22px;
-}
-
-.about-photo-card {
-  min-height: unset;
-  border: 2px solid rgba(49, 215, 255, 0.55);
-  border-radius: 22px;
-  overflow: hidden;
-  padding: 0;
-  background: rgba(8, 12, 31, 0.76);
-  box-shadow: 0 0 28px rgba(49,215,255,0.12), inset 0 0 24px rgba(49,215,255,0.08);
-}
-
-.about-family-photo {
-  display: block;
-  width: 100%;
-  max-height: 430px;
-  object-fit: cover;
-  object-position: center;
-}
-
-.about-photo-caption {
-  padding: 14px 16px;
-  background: rgba(6, 8, 18, 0.72);
-  border-top: 1px solid rgba(255,255,255,0.12);
-}
-
-.about-photo-caption strong {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--gold);
-  font-family: "Press Start 2P", monospace;
-  font-size: 0.72rem;
-  line-height: 1.6;
-}
-
-.about-photo-caption span {
-  color: rgba(245,247,255,0.76);
-  line-height: 1.6;
-  font-size: 0.88rem;
-}
-
-@media (max-width: 640px) {
-  .about-family-photo {
-    max-height: 310px;
-  }
-}
-
   </style>
 </head>
 <body>
@@ -1569,6 +1530,16 @@ button {
             <div class="boot-progress"><span></span></div>
           </div>
         </div>
+  <div id="mathModal" class="math-modal" aria-hidden="true">
+    <div class="math-card" role="dialog" aria-modal="true" aria-labelledby="mathTitle">
+      <h2 id="mathTitle">RoboTechi Math Gate</h2>
+      <p>Solve this to continue the mission.</p>
+      <div id="mathQuestion" class="math-question">2 + 2 = ?</div>
+      <div id="mathOptions" class="math-options"></div>
+      <div class="math-help">Use the D pad to choose. Press A or B to answer.</div>
+      <button id="mathOkBtn" class="math-ok-btn" type="button" aria-label="Select highlighted answer">OK</button>
+    </div>
+  </div>
       </div>
       <div id="message" class="message">Press Start to begin.</div>
       <div class="controls">
@@ -1611,14 +1582,19 @@ button {
       <button id="aboutClose" class="about-close" type="button" aria-label="Close about popup">×</button>
       <p class="eyebrow">About The Game</p>
       <h2 id="aboutTitle">Hacim Adventure</h2>
-      <div class="about-photo-grid" aria-label="Micah and Pa Pa family photo">
-        <figure class="about-photo-card">
-          <img class="about-family-photo" src="micahandpapa.jpeg" alt="Micah sitting with Pa Pa" />
-          <figcaption class="about-photo-caption">
-            <strong>Micah Hacim &amp; Pa Pa</strong>
-            <span>A real family moment connected to the heart and legacy behind Hacim Adventure.</span>
-          </figcaption>
-        </figure>
+      <div class="about-photo-grid" aria-label="Family photo placeholders">
+        <div class="about-photo-card">
+          <div>
+            <strong>Micah Hacim</strong>
+            <span>Photo placeholder for Micah, the inspiration behind the name Hacim.</span>
+          </div>
+        </div>
+        <div class="about-photo-card">
+          <div>
+            <strong>Pa Pa</strong>
+            <span>Photo placeholder for Pa Pa, connected to the golden floppy disk story.</span>
+          </div>
+        </div>
       </div>
       <div class="about-copy">
         <p><strong>Hacim Adventure</strong> was inspired by one of the very first computer games ever played by the founder of OdotNYC and Hacim Alyn. As a kid discovering computers and digital worlds for the first time, the game that stood out the most was the classic puzzle adventure <strong>Chip’s Challenge</strong>. The creativity, problem solving, keys, doors, hidden paths, and maze like gameplay left a lasting impact that would later inspire a new generation of ideas.</p>
@@ -1630,15 +1606,7 @@ button {
   </div>
 
 
-  <div id="mathModal" class="math-modal" aria-hidden="true">
-    <div class="math-card" role="dialog" aria-modal="true" aria-labelledby="mathTitle">
-      <h2 id="mathTitle">RoboTechi Math Gate</h2>
-      <p>Solve this to continue the mission.</p>
-      <div id="mathQuestion" class="math-question">2 + 2 = ?</div>
-      <div id="mathOptions" class="math-options"></div>
-      <div class="math-help">Use Up and Down on the D pad to choose. Press A to answer.</div>
-    </div>
-  </div>
+
 
   <footer class="site-footer">
     Copyright 2026 Hacim Alyn | All Rights Reserved. Powered by: RoboTechi Co.
@@ -1668,6 +1636,7 @@ const bootScreen = document.getElementById('bootScreen');
 const mathModal = document.getElementById('mathModal');
 const mathQuestionEl = document.getElementById('mathQuestion');
 const mathOptionsEl = document.getElementById('mathOptions');
+const mathOkBtn = document.getElementById('mathOkBtn');
 
 const TILE_SIZE = 64;
 const VIEW_COLS = 12;
@@ -2177,12 +2146,12 @@ function openMathChallenge() {
   renderMathChallenge();
   mathModal.classList.add('show');
   mathModal.setAttribute('aria-hidden', 'false');
-  setMessage('Math gate activated. Use the D pad and A button.');
+  setMessage('Math gate activated. Use the D pad, then press A or B.');
 }
 function renderMathChallenge() {
   if (!mathChallenge) return;
   mathQuestionEl.textContent = `${mathChallenge.question} = ?`;
-  mathOptionsEl.innerHTML = mathChallenge.options.map((option, index) => `<div class="math-option ${index === mathChallenge.selected ? 'selected' : ''}">${index === mathChallenge.selected ? '▶ ' : '  '}${option}</div>`).join('');
+  mathOptionsEl.innerHTML = mathChallenge.options.map((option, index) => `<div class="math-option ${index === mathChallenge.selected ? 'selected' : ''}" data-math-index="${index}">${index === mathChallenge.selected ? '▶ ' : '  '}${option}</div>`).join('');
 }
 function moveMathSelection(delta) {
   if (!mathChallenge) return;
@@ -2244,13 +2213,31 @@ function updateBots() { bots.forEach(bot => { const dx = bot.axis === 'x' ? bot.
 function checkCollision() { if (bots.some(bot => bot.x === player.x && bot.y === player.y)) loseGame('A corrupted bot caught Hacim. Restart this stage.'); }
 function loseGame(text) { gameState = 'lost'; botBubble = null; playLoseSound(); setMessage(text); updateUI(); draw(); }
 function completeStage() { gameState = 'won'; updateUI(); draw(); if (currentLevelIndex === levels.length - 1) { showVictoryScreen(); return; } setMessage(`Stage ${levelData.stage} complete. Loading next stage...`); setTimeout(() => { loadLevel(currentLevelIndex + 1); startGame(); }, 900); }
-window.addEventListener('keydown', (event) => { const key = event.key.toLowerCase(); if (mathChallenge) { if (['arrowup','w','arrowleft'].includes(key)) { event.preventDefault(); moveMathSelection(-1); } if (['arrowdown','s','arrowright'].includes(key)) { event.preventDefault(); moveMathSelection(1); } if (['enter',' ','a'].includes(key)) { event.preventDefault(); submitMathAnswer(); } return; } if (['arrowup','w'].includes(key)) movePlayer(0,-1); if (['arrowdown','s'].includes(key)) movePlayer(0,1); if (['arrowleft','a'].includes(key)) movePlayer(-1,0); if (['arrowright','d'].includes(key)) movePlayer(1,0); });
+window.addEventListener('keydown', (event) => { const key = event.key.toLowerCase(); if (mathChallenge) { if (['arrowup','w','arrowleft'].includes(key)) { event.preventDefault(); moveMathSelection(-1); } if (['arrowdown','s','arrowright'].includes(key)) { event.preventDefault(); moveMathSelection(1); } if (['enter',' ','a','b'].includes(key)) { event.preventDefault(); submitMathAnswer(); } return; } if (['arrowup','w'].includes(key)) movePlayer(0,-1); if (['arrowdown','s'].includes(key)) movePlayer(0,1); if (['arrowleft','a'].includes(key)) movePlayer(-1,0); if (['arrowright','d'].includes(key)) movePlayer(1,0); });
 startBtn.addEventListener('click', startGame); restartBtn.addEventListener('click', () => loadLevel(currentLevelIndex));
 function moveByDirection(dir) { if (mathChallenge) { if (dir === 'up' || dir === 'left') moveMathSelection(-1); if (dir === 'down' || dir === 'right') moveMathSelection(1); return; } if (dir === 'up') movePlayer(0,-1); if (dir === 'down') movePlayer(0,1); if (dir === 'left') movePlayer(-1,0); if (dir === 'right') movePlayer(1,0); }
 function stopMobileMove(button) { if (mobileMoveTimer) clearInterval(mobileMoveTimer); mobileMoveTimer = null; button?.classList.remove('is-pressed'); }
 document.querySelectorAll('[data-dir]').forEach(button => { const dir = button.dataset.dir; button.addEventListener('pointerdown', event => { event.preventDefault(); stopMobileMove(); button.classList.add('is-pressed'); moveByDirection(dir); mobileMoveTimer = setInterval(() => moveByDirection(dir), 210); }); button.addEventListener('pointerup', () => stopMobileMove(button)); button.addEventListener('pointerleave', () => stopMobileMove(button)); button.addEventListener('pointercancel', () => stopMobileMove(button)); });
 if (gbABtn) gbABtn.addEventListener('click', () => { if (mathChallenge) submitMathAnswer(); else startGame(); });
-if (gbBBtn) gbBBtn.addEventListener('click', () => { if (!mathChallenge) loadLevel(currentLevelIndex); });
+if (mathOkBtn) {
+  mathOkBtn.addEventListener('click', () => {
+    if (mathChallenge) {
+      mathOkBtn.classList.add('is-pressed');
+      setTimeout(() => mathOkBtn.classList.remove('is-pressed'), 120);
+      submitMathAnswer();
+    }
+  });
+}
+if (gbBBtn) gbBBtn.addEventListener('click', () => { if (mathChallenge) submitMathAnswer(); else loadLevel(currentLevelIndex); });
+
+if (mathOptionsEl) {
+  mathOptionsEl.addEventListener('click', (event) => {
+    const optionEl = event.target.closest('[data-math-index]');
+    if (!optionEl || !mathChallenge) return;
+    mathChallenge.selected = Number(optionEl.dataset.mathIndex);
+    renderMathChallenge();
+  });
+}
 setInterval(() => { if (gameState === 'playing' || gameState === 'ready') draw(); }, 180);
 function openAboutModal() { if (!aboutModal) return; aboutModal.classList.add('show'); aboutModal.setAttribute('aria-hidden', 'false'); }
 function closeAboutModal() { if (!aboutModal) return; aboutModal.classList.remove('show'); aboutModal.setAttribute('aria-hidden', 'true'); }
